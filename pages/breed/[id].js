@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
-import Link from 'next/link';
+import { useRouter } from 'next/router'
 
 import initialState from '../../redux/initialState';
 import Layout from '../../components/layout';
@@ -38,8 +38,8 @@ async function getSublist(id) {
 }
 
 function Breed({id = 'african', subBreeds = []}) {
+  const router = useRouter();
   const store = useStore();
-  console.log(store.getState());
   const dispatch = useDispatch();
   const cachedImages = useSelector(state => {
     return state?.breeds[id]?.images
@@ -62,21 +62,25 @@ function Breed({id = 'african', subBreeds = []}) {
   }, []);
   return (
     <Layout>
-      <div>{id}</div>
-      <div className="detail">
-        <div className="label">Sub breeds:</div>
-        <ul className="list">
-          {
-            subBreeds.map(
-              subBreed => (
-                <li>
-                  {subBreed}
-                </li>
-              )
-            )
-          }
-        </ul>
-      </div>
+      <div className="name">{id}</div>
+      {
+        subBreeds.length > 0 && (
+          <div className="subBreeds">
+            <div className="label">Sub breeds:</div>
+            <ul className="list">
+              {
+                subBreeds.map(
+                  subBreed => (
+                    <li>
+                      {subBreed}
+                    </li>
+                  )
+                )
+              }
+            </ul>
+          </div>
+        )
+      }
       <div className="change">
         <button
           onClick={async () => {
@@ -90,12 +94,17 @@ function Breed({id = 'african', subBreeds = []}) {
             });
             setImages(newImages);
           }}>
-          Change images
+          Change pictures
         </button>
       </div>
       <div className="images">
         {
-          images && images.map(
+          !images && (
+            <div className="loading">Loading pictures ...</div>
+          )
+        }
+        {
+         images && images.map(
             image => (
               <div className="image">
                 <img src={image} />
@@ -105,20 +114,32 @@ function Breed({id = 'african', subBreeds = []}) {
         }
       </div>
       <div>
-        <Link href="/" as={`/`}>
-          <a>Back</a>
-        </Link>
+        <button onClick={e => {
+            e.preventDefault();
+            router.push('/', '/');
+          }}>
+          Back
+        </button>
       </div>
       <style jsx>
         {`
-          .breeds {
+          .name {
+            text-transform: capitalize;
+          }
+          .subBreeds {
+            display: inline-flex;
+            margin: 20px 0px 0px 0px;
+          }
+          .change {
+            float: right;
           }
           .label {
-            display: inline-flex;
           }
           .list {
             list-style: none;
             display: inline-flex;
+            padding: 0px;
+            margin: 0px 0px 0px 10px;
           }
           .list li:after {
             content: ", ";
@@ -127,21 +148,34 @@ function Breed({id = 'african', subBreeds = []}) {
           .list li:last-child:after {
             content: "";
           }
+          .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: x-large;
+          }
           .images {
+            margin: 30px 0px;
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
             width: 100%;
+            height: 280px;
+          }
+          @media only screen and (max-width: 375px) {
+            .images {
+              height: 650px;
+            }
           }
           .image {
             display: flex;
             flex-direction: column;
             flex-basis: 100%;
             flex: 1;
-            align-items: center;
           }
           .image img {
-            max-width: 350px;
+            max-width: 280px;
+            max-height: 280px;
           }
         `}
       </style>
